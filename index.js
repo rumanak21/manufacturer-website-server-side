@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
@@ -10,40 +9,42 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.97p5q.mongodb.net/?retryWrites=true&w=majority`;
+// const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.twtll.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
-
+const uri = `mongodb+srv://electric-tools-manufacturer:${process.env.DB_PASS}@cluster0.ueksz.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
 
 async function run() {
-  try {
-    await client.connect();
-    const serviceCollection = client.db('electric-tools').collection('tools');
-    
+    try {
+        await client.connect();
+        const toolsCollection = client.db('electric-tools').collection('tools');
 
-    app.get('/service', async (req, res) => {
-      const query = {};
-      const cursor = serviceCollection.find(query).project({ name: 1 });
-      const services = await cursor.toArray();
-      res.send(services);
-    });
+        console.log('toolsCollection')
 
 
-  }
-  finally {
+        app.get('/tools', async (req, res) => {
+            const query = {};
+            const cursor = toolsCollection.find(query);
+            const tools = await cursor.toArray();
+            res.send(tools);
+        });
 
-  }
+    }
+    finally {
+
+    }
 }
 
 run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-  res.send('Hello Electric Tools Manufacturer!')
+    res.send('Hello Electric Tools Manufacturer!')
 })
 
 app.listen(port, () => {
-  console.log(`Electric Tools Manufacturer on port ${port}`)
+    console.log(`Electric Tools Manufacturer on port ${port}`)
 })
