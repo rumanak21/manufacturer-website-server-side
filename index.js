@@ -66,7 +66,7 @@ async function run() {
 
 
         // All Users API 
-        app.get('/user',  async (req, res) => {
+        app.get('/user', verifyJWT,  async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users);
         });
@@ -78,7 +78,7 @@ async function run() {
             res.send({ admin: isAdmin })
         })
 
-        app.put('/user/admin/:email', async (req, res) => {
+        app.put('/user/admin/:email', verifyJWT,  async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
             const updateDoc = {
@@ -100,6 +100,22 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
             res.send({ result, token });
         });
+
+
+
+        // JWT 
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: user,
+            }
+            const result = await userCollection.updateOne(filter, updateDoc, options)
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send({ result, token });
+        })
 
 
     }
