@@ -43,6 +43,7 @@ async function run() {
         const toolsCollection = client.db('electric-tools').collection('tools');
         const reviewCollection = client.db('electric-tools').collection('reviews');
         const userCollection = client.db('electric-tools').collection('users');
+        const orderCollection = client.db('electric-tools').collection('orders');
 
 
         // Admin Verification API 
@@ -58,7 +59,7 @@ async function run() {
             }
         }
 
-
+        // Product API 
 
         app.get('/tools', async (req, res) => {
             const query = {};
@@ -111,7 +112,7 @@ async function run() {
             res.send({ admin: isAdmin })
         })
 
-        app.put('/user/admin/:email', verifyJWT, verifyAdmin,   async (req, res) => {
+        app.put('/user/admin/:email', verifyJWT, verifyAdmin,  async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
             const updateDoc = {
@@ -133,6 +134,22 @@ async function run() {
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
             res.send({ result, token });
         });
+
+
+        // Order API 
+
+        app.post('/order', async (req, res) => {
+            const addOrder = req.body;
+            const result = await orderCollection.insertOne(addOrder);
+            res.send(result);
+        });
+
+        app.get('/order', async (req, res) => {
+            const query = {};
+            const cursor = orderCollection.find(query);
+            const order = await cursor.toArray();
+            res.send(order);
+        })
 
 
 
