@@ -67,6 +67,12 @@ async function run() {
             res.send(tools);
         });
 
+        app.post('/tools', async (req, res) => {
+            const addProduct = req.body;
+            const result = await toolsCollection.insertOne(addProduct);
+            res.send(result);
+        });
+
         app.get('/tools/:id', async (req, res) => {
             const id = req.params.id;
             console.log(id);
@@ -84,6 +90,12 @@ async function run() {
             const review = await cursor.toArray();
             res.send(review);
         })
+
+        app.post('/review', async (req, res) => {
+            const addReview = req.body;
+            const result = await reviewCollection.insertOne(addReview);
+            res.send(result);
+        });
 
 
         // All Users API 
