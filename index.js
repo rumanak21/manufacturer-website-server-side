@@ -15,6 +15,10 @@ app.use(express.json());
 const uri = `mongodb+srv://electric-tools-manufacturer:${process.env.DB_PASS}@cluster0.ueksz.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+
+
+// JWT Verification API 
+
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
@@ -31,12 +35,29 @@ function verifyJWT(req, res, next) {
 }
 
 
+
+
 async function run() {
     try {
         await client.connect();
         const toolsCollection = client.db('electric-tools').collection('tools');
         const reviewCollection = client.db('electric-tools').collection('reviews');
         const userCollection = client.db('electric-tools').collection('users');
+
+
+        // Admin Verification API 
+
+        const verifyAdmin = async (req, res, next) => {
+            const requester = req.decoded.email;
+            const requesterAccount = await userCollection.findOne({ email: requester });
+            if (requesterAccount.role === 'admin') {
+                next();
+            }
+            else {
+                res.status(403).send({ message: 'forbidden' });
+            }
+        }
+
 
 
         app.get('/tools', async (req, res) => {
@@ -78,7 +99,7 @@ async function run() {
             res.send({ admin: isAdmin })
         })
 
-        app.put('/user/admin/:email', verifyJWT,  async (req, res) => {
+        app.put('/user/admin/:email', verifyJWT, verifyAdmin,   async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
             const updateDoc = {
